@@ -15,19 +15,28 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.re
 
 using System.Collections.Generic;
+using System.Linq;
+using Bot.Service.Common;
+using Microsoft.Extensions.Configuration;
 
 namespace Bot.Service.Application.Reddit.Services
 {
-    public class SubredditProvider : ISubredditProvider
+    public class InMemorySubredditProvider : ISubredditProvider
     {
+        private readonly IConfiguration _configuration;
+
+
+        public InMemorySubredditProvider(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public IEnumerable<string> GetMonitoredSubs()
         {
-            return new[]
-            {
-                "MurderedByAOC",
-                "politics",
-                "09rul34tkjdfsgl4lkjr3"
-            };
+            return _configuration
+                .GetSection(AppConstants.SubredditsConfigurationSection)
+                .GetChildren()
+                .Select(v => v.Value);
         }
     }
 }
