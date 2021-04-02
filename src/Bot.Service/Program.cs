@@ -79,8 +79,8 @@ namespace Bot.Service
 
                     services.AddSingleton<IRedditProvider, RedditProvider>();
                     services.AddSingleton<IStringSearcher, StringSearcher>();
-                    services.AddSingleton<ITemplateProvider, TemplateProvider>();
-                    services.AddSingleton<ISubredditProvider, SubredditProvider>();
+                    services.AddSingleton<ITemplateProvider, InMemoryTemplateProvider>();
+                    services.AddSingleton<ISubredditProvider, InMemorySubredditProvider>();
                 });
     }
 }

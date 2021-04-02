@@ -19,7 +19,7 @@ using Bot.Service.Common.Models;
 using Microsoft.Extensions.Logging;
 using Reddit;
 
-namespace Bot.Service.Application.Reddit
+namespace Bot.Service.Application.Reddit.Services
 {
     public class RedditProvider : IRedditProvider
     {

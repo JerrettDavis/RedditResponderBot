@@ -1,0 +1,3 @@
+[submodule "Reddit.NET"]
+	path = Reddit.NET
+	url = https://github.com/JerrettDavis/Reddit.NET.git

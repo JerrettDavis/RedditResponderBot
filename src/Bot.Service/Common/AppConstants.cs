@@ -14,12 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-using Reddit;
-
-namespace Bot.Service.Application.Reddit
+namespace Bot.Service.Common
 {
-    public interface IRedditProvider
+    public static class AppConstants
     {
-        RedditClient GetClient();
+        public static string SubredditsConfigurationSection => "Subreddits";
+        public static string TemplateConfigurationSection => "Templates";
     }
 }

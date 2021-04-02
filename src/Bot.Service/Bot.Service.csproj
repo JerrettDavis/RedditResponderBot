@@ -31,4 +31,8 @@
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\lib\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj" />
+    </ItemGroup>
 </Project>
