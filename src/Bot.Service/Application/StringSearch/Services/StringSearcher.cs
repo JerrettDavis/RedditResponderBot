@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bot.Service.Application.StringSearch.Models;
+using Bot.Service.Application.Templates.Services;
 
 namespace Bot.Service.Application.StringSearch.Services
 {

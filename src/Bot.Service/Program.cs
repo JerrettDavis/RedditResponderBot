@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Bot.Service.Application.Reddit;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Services;
+using Bot.Service.Application.Templates.Services;
 using Bot.Service.Common.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,8 +46,21 @@ namespace Bot.Service
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostContext, builder) =>
+                {
+                    builder.SetBasePath(Directory.GetCurrentDirectory());
+                    builder.AddJsonFile("appsettings.json", false, true);
+                    builder.AddCommandLine(args);
+                    
+                    if (hostContext.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets<Program>();
+                    }
+                })
                 .ConfigureLogging(loggingBuilder =>
                 {
+                    loggingBuilder.ClearProviders();
+                    
                     var configuration = new ConfigurationBuilder()
                         .AddJsonFile("appsettings.json")
                         .Build();
@@ -55,22 +70,8 @@ namespace Bot.Service
                     
                     loggingBuilder.AddSerilog(logger, dispose: true);
                 })
-                .ConfigureAppConfiguration((hostContext, builder) =>
-                {
-                    if (hostContext.HostingEnvironment.IsDevelopment())
-                    {
-                        builder.AddUserSecrets<Program>();
-                    }
-                })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddLogging(builder =>
-                        builder
-                            .AddDebug()
-                            .AddConsole()
-                            .AddConfiguration(hostContext.Configuration.GetSection("Logging"))
-                            .SetMinimumLevel(LogLevel.Information));
-                    
                     services.AddHostedService<Worker>();
                     services.Configure<AppSettings>(hostContext.Configuration);
                     services.AddSingleton(s => s.GetService<IOptions<AppSettings>>()!.Value);

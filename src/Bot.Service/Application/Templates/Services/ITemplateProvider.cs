@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using Bot.Service.Application.StringSearch.Models;
 
-namespace Bot.Service.Application.StringSearch.Services
+namespace Bot.Service.Application.Templates.Services
 {
     public interface ITemplateProvider
     {

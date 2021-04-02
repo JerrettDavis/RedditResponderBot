@@ -15,10 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 using Bot.Service.Application.StringSearch.Models;
+using Bot.Service.Application.StringSearch.Services;
 
-namespace Bot.Service.Application.StringSearch.Services
+namespace Bot.Service.Application.Templates.Services
 {
     public class TemplateProvider : ITemplateProvider
     {
@@ -31,7 +31,19 @@ namespace Bot.Service.Application.StringSearch.Services
                     TemplateName = "Ted Cruz",
                     Triggers = new[] {"Ted Cruz"},
                     Response =
-                        "I do not like that man Ted Cruz,\n\nI do not like his far-right views.\n\nI do not like his stupid chin,\n\nI do not like his smarmy grin.\n\nI do not like him with a beard,\n\nI do not like him freshly sheared.\n\nI do not like Ted Cruz at all,\n\nThat man Ted Cruz can suck my balls.\n\n---\n^^Hi! ^^I'm ^^a ^^bot. ^^Feel ^^free ^^to ^^block ^^me ^^from ^^your ^^subreddit ^^if ^^you're ^^getting ^^spammed. ^^You ^^can ^^also ^^DM ^^my ^^creator ^^/u/jdsfighter ^^to ^^have ^^your ^^sub ^^added ^^to ^^the ^^blocklist."
+                        "I do not like that man Ted Cruz,\n\n" +
+                        "I do not like his far-right views.\n\n" +
+                        "I do not like his stupid chin,\n\n" +
+                        "I do not like his smarmy grin.\n\n" +
+                        "I do not like him with a beard,\n\n" +
+                        "I do not like him freshly sheared.\n\n" +
+                        "I do not like Ted Cruz at all,\n\n" +
+                        "That man Ted Cruz can suck my balls.\n\n" +
+                        "---\n" +
+                        "^^Hi! ^^I'm ^^a ^^bot. ^^Feel ^^free ^^to ^^block ^^me ^^from " +
+                        "^^your ^^subreddit ^^if ^^you're ^^getting ^^spammed. " +
+                        "^^You ^^can ^^also ^^DM ^^my ^^creator ^^/u/jdsfighter ^^to ^^have ^^your " +
+                        "^^sub ^^added ^^to ^^the ^^blocklist. ^^View ^^my ^^source ^^code [^^on ^^GitHub](https://github.com/JerrettDavis/RedditTedCruzResponderBot)"
                 }
             };
         }

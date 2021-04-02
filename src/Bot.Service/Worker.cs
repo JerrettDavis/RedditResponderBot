@@ -76,8 +76,7 @@ namespace Bot.Service
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {Time}", DateTimeOffset.Now);
-
-                _logger.LogDebug("Attempting to work queue...");
+                
                 while (!_queue.IsEmpty)
                 {
                     _logger.LogInformation("Trying to dequeue comment");
@@ -107,7 +106,6 @@ namespace Bot.Service
 
                     await Task.WhenAll(tasks);
                 }
-                _logger.LogDebug("Queue successfully worked");
 
                 await Task.Delay(1000, stoppingToken);
             }
@@ -121,21 +119,23 @@ namespace Bot.Service
         
         private void C_NewCommentsUpdated(object sender, CommentsUpdateEventArgs e)
         {
-            _logger.LogDebug("Received {Count} new comments", e.Added.Count);
+            _logger.LogInformation("Received {Count} new comments from {Subreddit}", e.Added.Count);
             
             var filtered = e.Added
                 .Where(comment => !_comments.ContainsKey(comment.Fullname) &&
                                   comment.Author != _me)
                 .Select(p => new EnqueuedComment(p, _searcher.GetApplicableTemplates(p.Body)))
-                .Where(p => p.Templates.Any());
+                .Where(p => p.Templates.Any())
+                .ToList();
             
-            _logger.LogDebug("Adding any new applicable comments to queue");
+            if (filtered.Any())
+                _logger.LogInformation("Found {Count} new comments to handle.", filtered.Count);
             
             foreach (var comment in filtered)
             {
                 _queue.Enqueue(comment);
                 _comments.Add(comment.Comment.Fullname, comment.Comment);
-                _logger.LogDebug("New comment! Name: {FullName}, Comment: {Comment}", comment.Comment.Fullname, comment.Comment.Body);
+                _logger.LogInformation("New Comment | Author {Author}, Comment {Comment}", comment.Comment.Author, comment.Comment.Body);
             }
         }
 
@@ -147,8 +147,8 @@ namespace Bot.Service
                 Templates = templates;
             }
 
-            public Comment Comment { get; init; }
-            public IEnumerable<SearchTemplate> Templates { get; init; } 
+            public Comment Comment { get; }
+            public IEnumerable<SearchTemplate> Templates { get; } 
         }
     }
 }
