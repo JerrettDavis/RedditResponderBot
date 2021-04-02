@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+using System;
 using Bot.Service.Common.Models;
 using Microsoft.Extensions.Logging;
 using Reddit;
@@ -22,21 +23,23 @@ namespace Bot.Service.Application.Reddit
 {
     public class RedditProvider : IRedditProvider
     {
-        private RedditClient? _client;
-        private readonly AppSettings _appSettings;
-        private readonly ILogger<RedditProvider> _logger;
+        private readonly RedditClient _client;
 
         public RedditProvider(AppSettings appSettings, ILogger<RedditProvider> logger)
         {
-            _appSettings = appSettings;
-            _logger = logger;
+            if (string.IsNullOrWhiteSpace(appSettings.AppId) || 
+                string.IsNullOrWhiteSpace(appSettings.RefreshToken))
+                throw new ArgumentException("You must supply an AppId and RefreshToken");
+            
+            logger.LogInformation("Getting Reddit client for AppId: {AppId} and Refresh Token: {RefreshToken}",
+                appSettings.AppId, appSettings.RefreshToken);
+            
+            _client = new RedditClient(appSettings.AppId, appSettings.RefreshToken);
         }
 
         public RedditClient GetClient()
         {
-            _logger.LogInformation("Getting Reddit client for AppId: {AppId} and Refresh Token: {RefreshToken}",
-                _appSettings.AppId, _appSettings.RefreshToken);
-            return _client ??= new RedditClient(_appSettings.AppId, _appSettings.RefreshToken);
+            return _client;
         }
     }
 }
