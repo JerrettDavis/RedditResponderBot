@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA8CC4D4-C04
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Service", "src\Bot.Service\Bot.Service.csproj", "{71DF4AE2-E113-4097-B08B-07A8B14D032B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reddit.NET", "lib\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj", "{F45C0A7D-0C20-469B-A3F6-E7BB20A9A3FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reddit.NET", "Reddit.NET\src\Reddit.NET\Reddit.NET.csproj", "{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +46,18 @@ Global
 		{F45C0A7D-0C20-469B-A3F6-E7BB20A9A3FE}.Release|x64.Build.0 = Release|Any CPU
 		{F45C0A7D-0C20-469B-A3F6-E7BB20A9A3FE}.Release|x86.ActiveCfg = Release|Any CPU
 		{F45C0A7D-0C20-469B-A3F6-E7BB20A9A3FE}.Release|x86.Build.0 = Release|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Debug|x64.Build.0 = Debug|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Debug|x86.Build.0 = Debug|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Release|x64.ActiveCfg = Release|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Release|x64.Build.0 = Release|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Release|x86.ActiveCfg = Release|Any CPU
+		{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{71DF4AE2-E113-4097-B08B-07A8B14D032B} = {AA8CC4D4-C047-4DD6-AFB7-C8A90A4759BC}

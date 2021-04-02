@@ -34,5 +34,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\lib\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj" />
+      <ProjectReference Include="..\..\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj" />
     </ItemGroup>
 </Project>
