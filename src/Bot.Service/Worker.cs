@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bot.Service.Application.Reddit;
@@ -119,7 +120,7 @@ namespace Bot.Service
         
         private void C_NewCommentsUpdated(object sender, CommentsUpdateEventArgs e)
         {
-            _logger.LogInformation("Received {Count} new comments from {Subreddit}", e.Added.Count);
+            _logger.LogInformation("Received {Count} new comments", e.Added.Count);
 
             var filtered = e.Added
                 .Where(comment => !_comments.ContainsKey(comment.Fullname) &&

@@ -47,8 +47,8 @@ namespace Bot.Service
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(loggingBuilder =>
-                {
-                    //loggingBuilder.ClearProviders();
+                { 
+                    loggingBuilder.ClearProviders();
                     
                     var configuration = new ConfigurationBuilder()
                         .AddJsonFile("appsettings.json")
