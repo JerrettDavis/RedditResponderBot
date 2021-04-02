@@ -1,0 +1,8 @@
+﻿version: "3.9"
+
+services:
+  bot:
+    build: ./src/Bot.Service
+    environment:
+      - AppId=${APPID}
+      - RefreshToken=${REFRESHTOKEN}
