@@ -46,20 +46,9 @@ namespace Bot.Service
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostContext, builder) =>
-                {
-                    builder.SetBasePath(Directory.GetCurrentDirectory());
-                    builder.AddJsonFile("appsettings.json", false, true);
-                    builder.AddCommandLine(args);
-                    
-                    if (hostContext.HostingEnvironment.IsDevelopment())
-                    {
-                        builder.AddUserSecrets<Program>();
-                    }
-                })
                 .ConfigureLogging(loggingBuilder =>
                 {
-                    loggingBuilder.ClearProviders();
+                    //loggingBuilder.ClearProviders();
                     
                     var configuration = new ConfigurationBuilder()
                         .AddJsonFile("appsettings.json")
@@ -69,6 +58,18 @@ namespace Bot.Service
                         .CreateLogger();
                     
                     loggingBuilder.AddSerilog(logger, dispose: true);
+                })
+                .ConfigureAppConfiguration((hostContext, builder) =>
+                {
+                    builder.SetBasePath(Directory.GetCurrentDirectory());
+                    builder.AddJsonFile("appsettings.json", false, true);
+                    builder.AddCommandLine(args);
+                    builder.AddEnvironmentVariables();
+                    
+                    if (hostContext.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets<Program>();
+                    }
                 })
                 .ConfigureServices((hostContext, services) =>
                 {

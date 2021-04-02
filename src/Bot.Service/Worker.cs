@@ -120,16 +120,12 @@ namespace Bot.Service
         private void C_NewCommentsUpdated(object sender, CommentsUpdateEventArgs e)
         {
             _logger.LogInformation("Received {Count} new comments from {Subreddit}", e.Added.Count);
-            
+
             var filtered = e.Added
                 .Where(comment => !_comments.ContainsKey(comment.Fullname) &&
                                   comment.Author != _me)
                 .Select(p => new EnqueuedComment(p, _searcher.GetApplicableTemplates(p.Body)))
-                .Where(p => p.Templates.Any())
-                .ToList();
-            
-            if (filtered.Any())
-                _logger.LogInformation("Found {Count} new comments to handle.", filtered.Count);
+                .Where(p => p.Templates.Any());
             
             foreach (var comment in filtered)
             {
