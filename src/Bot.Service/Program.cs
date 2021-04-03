@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Bot.Service.Application.Comments.Services;
 using Bot.Service.Application.Consumers;
 using Bot.Service.Application.Monitor.Services;
-using Bot.Service.Application.Reddit;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Services;
 using Bot.Service.Application.Templates.Services;
-using Bot.Service.Common;
+using Bot.Service.BackgroundWorkers;
 using Bot.Service.Common.Models;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -94,6 +90,9 @@ namespace Bot.Service
                     services.AddMassTransitHostedService();
 
                     services.AddSingleton<ICommentStore, CommentStore>();
+                    services.AddSingleton<ICommentStore, ProcessedCommentStore>();
+                    services.AddSingleton<ICommentStore, ReceivedCommentStore>();
+
                     services.AddSingleton<IProcessedCommentStore, ProcessedCommentStore>();
                     services.AddSingleton<IReceivedCommentStore, ReceivedCommentStore>();
                     services.AddSingleton<IRedditProvider, RedditProvider>();
@@ -102,7 +101,9 @@ namespace Bot.Service
                     services.AddSingleton<ISubredditMonitor, SubredditCommentMonitor>();
                     services.AddSingleton<ITemplateProvider, InMemoryTemplateProvider>();
                     
+                    services.AddHostedService<ClientStoreCleanupWorker>();
                     services.AddHostedService<Worker>();
+                    
                     services.Configure<AppSettings>(hostContext.Configuration);
                 });
     }

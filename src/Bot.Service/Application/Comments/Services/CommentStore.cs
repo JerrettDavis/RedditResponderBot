@@ -22,9 +22,12 @@ using Reddit.Controllers;
 
 namespace Bot.Service.Application.Comments.Services
 {
+    // TODO: Make this implement its own IDictionary interface
     public class CommentStore : ICommentStore
     {
-        private readonly IDictionary<KeyValuePair<string, string>, Comment> _comments;
+        private readonly ConcurrentDictionary<KeyValuePair<string, string>, Comment> _comments;
+
+        public IReadOnlyDictionary<KeyValuePair<string, string>, Comment> Store => _comments;
 
         public CommentStore()
         {
@@ -50,7 +53,18 @@ namespace Bot.Service.Application.Comments.Services
             CancellationToken cancellationToken = default)
         {
             return Task.Run(() => _comments[new KeyValuePair<string, string>(key, commentName)], cancellationToken);
-        } 
+        }
+
+        public virtual Task Remove(
+            string key,
+            string commentName,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() =>
+            {
+                _comments.TryRemove(new KeyValuePair<string, string>(key, commentName), out _);
+            }, cancellationToken);
+        }
 
         public virtual Task<bool> Contains(
             string key, 

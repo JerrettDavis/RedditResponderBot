@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Reddit.Controllers;
@@ -29,5 +30,12 @@ namespace Bot.Service.Application.Comments.Services
             string key,
             string commentName,
             CancellationToken cancellationToken = default);
+
+        Task Remove(
+            string key,
+            string commentName,
+            CancellationToken cancellationToken = default);
+
+        IReadOnlyDictionary<KeyValuePair<string, string>, Comment> Store { get; }
     }
 }
