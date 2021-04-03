@@ -147,5 +147,11 @@ This application relies on the [Reddit API](https://www.reddit.com/dev/api), and
 of service and their [API access rules](https://github.com/reddit-archive/reddit/wiki/API). 
 
 One core limitation of the Reddit API is that it only allows up to 60 requests a minute. If you are monitoring a large
-number of subs, 
+number of subs, it can take quite some time to consume them all. If a sub receives more than 100 comments since the last
+time it was traversed, you may miss some.
+
+# License
+
+[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0)
+
 
