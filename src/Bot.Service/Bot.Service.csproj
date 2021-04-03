@@ -33,6 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj" />
+      <ProjectReference Include="..\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj" />
     </ItemGroup>
 </Project>
