@@ -23,6 +23,7 @@ using Bot.Service.Application.Comments.Services;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Models;
 using Bot.Service.Application.StringSearch.Services;
+using Bot.Service.Common.Extensions;
 using Bot.Service.Common.Models.Messages;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -33,6 +34,7 @@ namespace Bot.Service.Application.Consumers
     public class NewCommentTriggerProcessorConsumer : IConsumer<CommentsReceived>
     {
         private const string QueueKey = "ProcessedAddedComments";
+        private readonly IProcessedCommentStore _processedCommentStore;
         private readonly IReceivedCommentStore _receivedCommentStore;
         private readonly IProcessedCommentStore _comments;
         private readonly IStringSearcher _searcher;
@@ -45,12 +47,14 @@ namespace Bot.Service.Application.Consumers
             IRedditProvider reddit, 
             IStringSearcher searcher, 
             ILogger<NewCommentTriggerProcessorConsumer> logger, 
-            IReceivedCommentStore receivedCommentStore)
+            IReceivedCommentStore receivedCommentStore, 
+            IProcessedCommentStore processedCommentStore)
         {
             _comments = comments;
             _searcher = searcher;
             _logger = logger;
             _receivedCommentStore = receivedCommentStore;
+            _processedCommentStore = processedCommentStore;
 
             _me = reddit.GetClient().Account.Me.Name;
         }
@@ -60,7 +64,7 @@ namespace Bot.Service.Application.Consumers
             _logger.LogInformation(
                 "Handling {Count} new comments from {Subreddit}", 
                 context.Message.Added.Count(), 
-                context.Message.Subreddit.Name);
+                context.Message.Subreddit);
 
             var addedTasks = context.Message.Added.Select(async a =>
                 await _receivedCommentStore.Get(
@@ -79,16 +83,17 @@ namespace Bot.Service.Application.Consumers
                 context.CancellationToken))
                 .ToList();
             
-            _logger.LogInformation(
-                "Found {Count} applicable comments. Queuing responses...", triggered.Count);
-            
-            var tasks = triggered.Select(c => 
-                context.Publish<NewCommentNeedsResponse>(new
-            {
-                c.Comment, c.Templates
-            }));
+            _logger.LogInformation("Found {Count} applicable comments", triggered.Count);
 
-            await Task.WhenAll(tasks);
+            await triggered.ForEachAsync(async c =>
+            {
+                await _processedCommentStore.Add(CommentStoreConstants.AddedQueue, c.Comment, context.CancellationToken);
+                await context.Publish<NewCommentNeedsResponse>(new
+                {
+                    Comment = c.Comment.Fullname, 
+                    c.Templates
+                });
+            }, cancellationToken: context.CancellationToken);
         }
 
         private async Task<IEnumerable<Comment>> GetFilteredComments(

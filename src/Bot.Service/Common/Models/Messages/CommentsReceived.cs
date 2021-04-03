@@ -15,15 +15,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using Reddit.Controllers;
-using Subreddit = Reddit.Controllers.Subreddit;
 
 namespace Bot.Service.Common.Models.Messages
 {
     // ReSharper disable once InconsistentNaming
     public interface CommentsReceived
     {
-        Subreddit Subreddit { get; set; }
+        string Subreddit { get; set; }
         IEnumerable<string> OldComments { get; set; }
         IEnumerable<string> NewComments { get; set; }
         IEnumerable<string> Added { get; set; }

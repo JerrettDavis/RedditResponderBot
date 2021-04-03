@@ -1,18 +1,12 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bot.Service.Application.Monitor.Services;
 using Bot.Service.Application.Reddit.Services;
-using Bot.Service.Application.StringSearch.Models;
-using Bot.Service.Application.StringSearch.Services;
+using Bot.Service.Common.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Reddit.Controllers;
-using Reddit.Controllers.EventArgs;
-using Reddit.Exceptions;
 
 namespace Bot.Service
 {
@@ -37,12 +31,11 @@ namespace Bot.Service
             _logger.LogInformation("Starting bot");
 
             var subredditNames = _subredditProvider.GetMonitoredSubs().ToList();
-
-            var monitorTasks = subredditNames.Select(n => 
-                _monitor.Monitor(n, stoppingToken))
-                .ToList();
-
-            await Task.WhenAll(monitorTasks);
+            
+            await subredditNames.ForEachAsync(async subreddit =>
+            {
+                await _monitor.Monitor(subreddit, stoppingToken);
+            }, cancellationToken: stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -50,8 +43,20 @@ namespace Bot.Service
 
                 await Task.Delay(1000, stoppingToken);
             }
+        }
 
-            _monitor.Dispose();
+        public sealed override void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _monitor.Dispose();
+            }
         }
     }
 }

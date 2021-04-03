@@ -62,7 +62,7 @@ namespace Bot.Service.Application.Consumers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Something went wrong: {Exception}. Lets ignore this one...", ex);
+                        _logger.LogError(ex, "Something went wrong. Lets ignore this one...");
                     }
                 },context.CancellationToken));
 

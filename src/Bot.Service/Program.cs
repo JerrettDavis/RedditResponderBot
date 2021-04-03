@@ -79,8 +79,6 @@ namespace Bot.Service
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<Worker>();
-                    services.Configure<AppSettings>(hostContext.Configuration);
                     services.AddSingleton(s => s.GetService<IOptions<AppSettings>>()!.Value);
 
                     services.AddMassTransit(x =>
@@ -93,6 +91,7 @@ namespace Bot.Service
                             cfg.ConfigureEndpoints(context);
                         });
                     });
+                    services.AddMassTransitHostedService();
 
                     services.AddSingleton<ICommentStore, CommentStore>();
                     services.AddSingleton<IProcessedCommentStore, ProcessedCommentStore>();
@@ -100,8 +99,11 @@ namespace Bot.Service
                     services.AddSingleton<IRedditProvider, RedditProvider>();
                     services.AddSingleton<IStringSearcher, StringSearcher>();
                     services.AddSingleton<ISubredditProvider, InMemorySubredditProvider>();
-                    services.AddSingleton<ISubredditMonitor, SubredditNewCommentMonitor>();
+                    services.AddSingleton<ISubredditMonitor, SubredditCommentMonitor>();
                     services.AddSingleton<ITemplateProvider, InMemoryTemplateProvider>();
+                    
+                    services.AddHostedService<Worker>();
+                    services.Configure<AppSettings>(hostContext.Configuration);
                 });
     }
 }

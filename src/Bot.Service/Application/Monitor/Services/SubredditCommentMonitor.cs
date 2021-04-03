@@ -33,18 +33,18 @@ using Reddit.Exceptions;
 
 namespace Bot.Service.Application.Monitor.Services
 {
-    public class SubredditNewCommentMonitor : ISubredditMonitor
+    public class SubredditCommentMonitor : ISubredditMonitor
     {
-        private readonly ILogger<SubredditNewCommentMonitor> _logger;
+        private readonly ILogger<SubredditCommentMonitor> _logger;
         private readonly IReceivedCommentStore _receivedCommentStore;
         private readonly IServiceProvider _services;
             
         private readonly IDictionary<string, Subreddit> _monitoredSubreddits;
         private readonly RedditClient _reddit;
 
-        public SubredditNewCommentMonitor(
+        public SubredditCommentMonitor(
             IRedditProvider redditProvider,
-            ILogger<SubredditNewCommentMonitor> logger, 
+            ILogger<SubredditCommentMonitor> logger, 
             IServiceProvider services, 
             IReceivedCommentStore receivedCommentStore)
         {
@@ -62,6 +62,9 @@ namespace Bot.Service.Application.Monitor.Services
         {
             return Task.Run(() =>
             {
+                if (_monitoredSubreddits.ContainsKey(subredditName))
+                    return;
+                
                 _logger.LogInformation("Processing Subreddit {Subreddit}", subredditName);
                 var subreddit = _reddit.Subreddit(subredditName);
             
@@ -74,7 +77,7 @@ namespace Bot.Service.Application.Monitor.Services
                 _logger.LogInformation("Adding event handler for {Subreddit}", subredditName);
                 subreddit.Comments.NewUpdated += CommentsOnNewUpdated;
 
-                _monitoredSubreddits.Add(subredditName, subreddit);
+                _monitoredSubreddits.TryAdd(subredditName, subreddit);
             }, cancellationToken);
         }
 
@@ -84,6 +87,9 @@ namespace Bot.Service.Application.Monitor.Services
         {
             return Task.Run(() =>
             {
+                if (!_monitoredSubreddits.ContainsKey(subredditName))
+                    return;
+                
                 var subreddit = _monitoredSubreddits[subredditName];
 
                 subreddit.Comments.MonitorNew();
@@ -97,8 +103,11 @@ namespace Bot.Service.Application.Monitor.Services
         {
             var subredditName = ((global::Reddit.Controllers.Comments) sender!).SubKey;
             _logger.LogInformation(
-                "Received {Count} new comments for {Subreddit}", 
+                "Received {Added} added, {Removed} removed, {NewComments} new, and {OldComments} old comments for {Subreddit}", 
                 e.Added.Count, 
+                e.Removed.Count,
+                e.NewComments.Count,
+                e.OldComments.Count,
                 subredditName);
 
             var oldComments = new List<string>();
@@ -131,14 +140,13 @@ namespace Bot.Service.Application.Monitor.Services
             }
 
             await Task.WhenAll(commentTasks);
-            
 
             using var scope = _services.CreateScope();
             var endpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
             
             await endpoint.Publish<CommentsReceived>(new
             {
-                Subreddit = _monitoredSubreddits[subredditName],
+                Subreddit = subredditName,
                 OldComments = oldComments,
                 NewComments = newComments,
                 Added = addedComments,
@@ -172,7 +180,7 @@ namespace Bot.Service.Application.Monitor.Services
             }
         }
 
-        ~SubredditNewCommentMonitor()
+        ~SubredditCommentMonitor()
         {
             ReleaseUnmanagedResources();
         }
