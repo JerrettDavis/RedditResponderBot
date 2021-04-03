@@ -14,9 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+using System.Threading;
+using System.Threading.Tasks;
+using Reddit.Controllers;
+
 namespace Bot.Service.Application.Comments.Services
 {
-    public class ProcessedCommentStore : CommentStore, IProcessedCommentStore
+    public interface ICommentStore
     {
+        Task Add(string key, Comment comment, CancellationToken cancellationToken = default);
+        Task<bool> Contains(string key, Comment comment, CancellationToken cancellationToken = default);
+
+        Task<Comment> Get(
+            string key,
+            string commentName,
+            CancellationToken cancellationToken = default);
     }
 }

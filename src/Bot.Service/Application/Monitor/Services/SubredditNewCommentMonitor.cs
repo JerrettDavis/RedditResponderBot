@@ -19,6 +19,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Bot.Service.Application.Comments.Models;
+using Bot.Service.Application.Comments.Services;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Common.Models.Messages;
 using MassTransit;
@@ -34,6 +36,7 @@ namespace Bot.Service.Application.Monitor.Services
     public class SubredditNewCommentMonitor : ISubredditMonitor
     {
         private readonly ILogger<SubredditNewCommentMonitor> _logger;
+        private readonly IReceivedCommentStore _receivedCommentStore;
         private readonly IServiceProvider _services;
             
         private readonly IDictionary<string, Subreddit> _monitoredSubreddits;
@@ -42,11 +45,13 @@ namespace Bot.Service.Application.Monitor.Services
         public SubredditNewCommentMonitor(
             IRedditProvider redditProvider,
             ILogger<SubredditNewCommentMonitor> logger, 
-            IServiceProvider services)
+            IServiceProvider services, 
+            IReceivedCommentStore receivedCommentStore)
         {
             _reddit = redditProvider.GetClient();
             _logger = logger;
             _services = services;
+            _receivedCommentStore = receivedCommentStore;
 
             _monitoredSubreddits = new ConcurrentDictionary<string,Subreddit>();
         }
@@ -80,7 +85,7 @@ namespace Bot.Service.Application.Monitor.Services
             return Task.Run(() =>
             {
                 var subreddit = _monitoredSubreddits[subredditName];
-            
+
                 subreddit.Comments.MonitorNew();
                 subreddit.Comments.NewUpdated -= CommentsOnNewUpdated;
 
@@ -96,16 +101,48 @@ namespace Bot.Service.Application.Monitor.Services
                 e.Added.Count, 
                 subredditName);
 
+            var oldComments = new List<string>();
+            var commentTasks = new List<Task>();
+            foreach (var old in e.OldComments)
+            {
+                oldComments.Add(old.Fullname);
+                commentTasks.Add(_receivedCommentStore.Add(CommentStoreConstants.OldCommentsQueue, old));
+            }
+            
+            var newComments = new List<string>();
+            foreach (var newComment in e.NewComments)
+            {
+                newComments.Add(newComment.Fullname);
+                commentTasks.Add(_receivedCommentStore.Add(CommentStoreConstants.NewCommentsQueue, newComment));
+            }
+            
+            var addedComments = new List<string>();
+            foreach (var added in e.Added)
+            {
+                addedComments.Add(added.Fullname);
+                commentTasks.Add(_receivedCommentStore.Add(CommentStoreConstants.AddedQueue, added));
+            }
+            
+            var removedComments = new List<string>();
+            foreach (var removed in e.Removed)
+            {
+                removedComments.Add(removed.Fullname);
+                commentTasks.Add(_receivedCommentStore.Add(CommentStoreConstants.RemovedQueue, removed));
+            }
+
+            await Task.WhenAll(commentTasks);
+            
+
             using var scope = _services.CreateScope();
             var endpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
             
             await endpoint.Publish<CommentsReceived>(new
             {
                 Subreddit = _monitoredSubreddits[subredditName],
-                e.OldComments,
-                e.NewComments,
-                e.Added,
-                e.Removed
+                OldComments = oldComments,
+                NewComments = newComments,
+                Added = addedComments,
+                Removed = removedComments
             });
         }
 

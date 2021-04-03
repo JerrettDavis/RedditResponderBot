@@ -24,9 +24,9 @@ namespace Bot.Service.Common.Models.Messages
     public interface CommentsReceived
     {
         Subreddit Subreddit { get; set; }
-        IEnumerable<Comment> OldComments { get; set; }
-        IEnumerable<Comment> NewComments { get; set; }
-        IEnumerable<Comment> Added { get; set; }
-        IEnumerable<Comment> Removed { get; set; }
+        IEnumerable<string> OldComments { get; set; }
+        IEnumerable<string> NewComments { get; set; }
+        IEnumerable<string> Added { get; set; }
+        IEnumerable<string> Removed { get; set; }
     }
 }

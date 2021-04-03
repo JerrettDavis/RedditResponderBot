@@ -94,7 +94,9 @@ namespace Bot.Service
                         });
                     });
 
+                    services.AddSingleton<ICommentStore, CommentStore>();
                     services.AddSingleton<IProcessedCommentStore, ProcessedCommentStore>();
+                    services.AddSingleton<IReceivedCommentStore, ReceivedCommentStore>();
                     services.AddSingleton<IRedditProvider, RedditProvider>();
                     services.AddSingleton<IStringSearcher, StringSearcher>();
                     services.AddSingleton<ISubredditProvider, InMemorySubredditProvider>();

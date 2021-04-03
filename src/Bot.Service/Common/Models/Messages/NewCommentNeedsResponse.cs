@@ -23,7 +23,7 @@ namespace Bot.Service.Common.Models.Messages
     // ReSharper disable once InconsistentNaming
     public interface NewCommentNeedsResponse
     {
-        Comment Comment { get; set; }
+        string Comment { get; set; }
         public IEnumerable<SearchTemplate> Templates { get; set; }
     }
 }

@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bot.Service.Application.Comments.Models;
 using Bot.Service.Application.Comments.Services;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Models;
@@ -32,6 +33,7 @@ namespace Bot.Service.Application.Consumers
     public class NewCommentTriggerProcessorConsumer : IConsumer<CommentsReceived>
     {
         private const string QueueKey = "ProcessedAddedComments";
+        private readonly IReceivedCommentStore _receivedCommentStore;
         private readonly IProcessedCommentStore _comments;
         private readonly IStringSearcher _searcher;
         private readonly ILogger<NewCommentTriggerProcessorConsumer> _logger;
@@ -42,11 +44,13 @@ namespace Bot.Service.Application.Consumers
             IProcessedCommentStore comments,
             IRedditProvider reddit, 
             IStringSearcher searcher, 
-            ILogger<NewCommentTriggerProcessorConsumer> logger)
+            ILogger<NewCommentTriggerProcessorConsumer> logger, 
+            IReceivedCommentStore receivedCommentStore)
         {
             _comments = comments;
             _searcher = searcher;
             _logger = logger;
+            _receivedCommentStore = receivedCommentStore;
 
             _me = reddit.GetClient().Account.Me.Name;
         }
@@ -57,9 +61,18 @@ namespace Bot.Service.Application.Consumers
                 "Handling {Count} new comments from {Subreddit}", 
                 context.Message.Added.Count(), 
                 context.Message.Subreddit.Name);
-            
+
+            var addedTasks = context.Message.Added.Select(async a =>
+                await _receivedCommentStore.Get(
+                    CommentStoreConstants.AddedQueue,
+                    a,
+                    context.CancellationToken))
+                .ToList();
+            await Task.WhenAll(addedTasks);
+
+            var added = addedTasks.Select(a => a.Result);
             var filtered = await GetFilteredComments(
-                context.Message.Added, 
+                added, 
                 context.CancellationToken);
             var triggered = (await GetTriggeredComments(
                 filtered,

@@ -16,7 +16,7 @@
 
 namespace Bot.Service.Application.Comments.Services
 {
-    public class ProcessedCommentStore : CommentStore, IProcessedCommentStore
+    public class ReceivedCommentStore : CommentStore, IReceivedCommentStore
     {
     }
 }

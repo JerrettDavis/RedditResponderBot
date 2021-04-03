@@ -17,6 +17,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Bot.Service.Application.Comments.Models;
+using Bot.Service.Application.Comments.Services;
 using Bot.Service.Common.Models.Messages;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -28,23 +30,30 @@ namespace Bot.Service.Application.Consumers
         IConsumer<NewCommentNeedsResponse>
     {
         private readonly ILogger<TriggeredCommentResponderConsumer> _logger;
-
+        private readonly IProcessedCommentStore _processedCommentStore;
 
         public TriggeredCommentResponderConsumer(
-            ILogger<TriggeredCommentResponderConsumer> logger)
+            ILogger<TriggeredCommentResponderConsumer> logger, 
+            IProcessedCommentStore processedCommentStore)
         {
             _logger = logger;
+            _processedCommentStore = processedCommentStore;
         }
 
         public Task Consume(ConsumeContext<NewCommentNeedsResponse> context)
         {
-            _logger.LogInformation("Responding to {Author}", context.Message.Comment.Author);
+            _logger.LogInformation("Received response request for {Comment}", context.Message.Comment);
             var tasks = context.Message.Templates.Select(template =>
                 Task.Run(async () =>
                 {
                     try
                     {
-                        await context.Message.Comment.ReplyAsync(template.Response);
+                        var comment = await _processedCommentStore.Get(
+                            CommentStoreConstants.AddedQueue,
+                            context.Message.Comment, 
+                            context.CancellationToken);
+                        _logger.LogInformation("Responding to {Author}", comment.Author);
+                        await comment.ReplyAsync(template.Response);
                     }
                     catch (RedditRateLimitException)
                     {

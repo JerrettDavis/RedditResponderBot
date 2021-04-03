@@ -14,9 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace Bot.Service.Application.Comments.Services
+namespace Bot.Service.Application.Comments.Models
 {
-    public class ProcessedCommentStore : CommentStore, IProcessedCommentStore
+    public static class CommentStoreConstants
     {
+        public static string OldCommentsQueue => "OldComments";
+        public static string NewCommentsQueue => "Newcomments";
+        public static string AddedQueue => "Added";
+        public static string RemovedQueue => "Removed";
     }
 }
