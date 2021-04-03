@@ -1,19 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Bot.Service.Application.Reddit;
+using Bot.Service.Application.Comments.Services;
+using Bot.Service.Application.Consumers;
+using Bot.Service.Application.Monitor.Services;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Services;
 using Bot.Service.Application.Templates.Services;
+using Bot.Service.BackgroundWorkers;
 using Bot.Service.Common.Models;
+using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
+using IHost = Microsoft.Extensions.Hosting.IHost;
 
 namespace Bot.Service
 {
@@ -73,14 +75,36 @@ namespace Bot.Service
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<Worker>();
-                    services.Configure<AppSettings>(hostContext.Configuration);
                     services.AddSingleton(s => s.GetService<IOptions<AppSettings>>()!.Value);
 
+                    services.AddMassTransit(x =>
+                    {
+                        x.AddConsumers(typeof(NewCommentTriggerProcessorConsumer).Assembly);
+                        
+                        x.UsingInMemory((context, cfg) =>
+                        {
+                            cfg.TransportConcurrencyLimit = 100;
+                            cfg.ConfigureEndpoints(context);
+                        });
+                    });
+                    services.AddMassTransitHostedService();
+
+                    services.AddSingleton<ICommentStore, CommentStore>();
+                    services.AddSingleton<ICommentStore, ProcessedCommentStore>();
+                    services.AddSingleton<ICommentStore, ReceivedCommentStore>();
+
+                    services.AddSingleton<IProcessedCommentStore, ProcessedCommentStore>();
+                    services.AddSingleton<IReceivedCommentStore, ReceivedCommentStore>();
                     services.AddSingleton<IRedditProvider, RedditProvider>();
                     services.AddSingleton<IStringSearcher, StringSearcher>();
-                    services.AddSingleton<ITemplateProvider, InMemoryTemplateProvider>();
                     services.AddSingleton<ISubredditProvider, InMemorySubredditProvider>();
+                    services.AddSingleton<ISubredditMonitor, SubredditCommentMonitor>();
+                    services.AddSingleton<ITemplateProvider, InMemoryTemplateProvider>();
+                    
+                    services.AddHostedService<ClientStoreCleanupWorker>();
+                    services.AddHostedService<Worker>();
+                    
+                    services.Configure<AppSettings>(hostContext.Configuration);
                 });
     }
 }
