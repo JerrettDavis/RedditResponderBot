@@ -2,7 +2,7 @@
 
 services:
   bot:
-    build: ./src/Bot.Service
+    build: .
     environment:
       - AppId=${APPID}
       - RefreshToken=${REFRESHTOKEN}

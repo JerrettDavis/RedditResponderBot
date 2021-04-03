@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA8CC4D4-C04
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Service", "src\Bot.Service\Bot.Service.csproj", "{71DF4AE2-E113-4097-B08B-07A8B14D032B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reddit.NET", "Reddit.NET\src\Reddit.NET\Reddit.NET.csproj", "{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reddit.NET", "src\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj", "{2E0D4BDE-ACC0-43BC-B5C7-10F2894DFD00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

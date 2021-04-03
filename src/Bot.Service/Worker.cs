@@ -62,8 +62,8 @@ namespace Bot.Service
 
                 try
                 {
-                    subreddit.Comments.GetNew();
-                    subreddit.Comments.MonitorNew();
+                    subreddit.Comments.GetNew(limit:100);
+                    subreddit.Comments.MonitorNew(limit:100);
                     subreddit.Comments.NewUpdated += C_NewCommentsUpdated;
                 }
                 catch (RedditBadRequestException ex)
