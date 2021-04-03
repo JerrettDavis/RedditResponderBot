@@ -2,10 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Bot.Service.Application.Reddit;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Models;
 using Bot.Service.Application.StringSearch.Services;
@@ -27,14 +25,14 @@ namespace Bot.Service
         private readonly IDictionary<string, Comment> _comments;
         private readonly ConcurrentQueue<EnqueuedComment> _queue;
 
-        private readonly ICollection<Subreddit> _monitoredSubreddits;
+        private readonly ConcurrentBag<Subreddit> _monitoredSubreddits;
 
         private string? _me;
 
         public Worker(
-            ILogger<Worker> logger, 
-            IRedditProvider redditProvider, 
-            IStringSearcher searcher, 
+            ILogger<Worker> logger,
+            IRedditProvider redditProvider,
+            IStringSearcher searcher,
             ISubredditProvider subredditProvider)
         {
             _logger = logger;
@@ -44,40 +42,53 @@ namespace Bot.Service
 
             _comments = new ConcurrentDictionary<string, Comment>();
             _queue = new ConcurrentQueue<EnqueuedComment>();
-            _monitoredSubreddits = new List<Subreddit>();
+            _monitoredSubreddits = new ConcurrentBag<Subreddit>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Starting bot");
-            
+
             var reddit = _redditProvider.GetClient();
-            var subredditNames = _subredditProvider.GetMonitoredSubs();
-            
+            var subredditNames = _subredditProvider.GetMonitoredSubs().ToList();
+
             _me = reddit.Account.Me.Name;
 
-            foreach (var subredditName in subredditNames)
-            {
-                var subreddit = reddit.Subreddit(subredditName);
+            var subs = new ConcurrentBag<Subreddit>();
 
-                try
+            // Initialize all the subreddits first
+            Parallel.ForEach(
+                subredditNames, 
+                new ParallelOptions {CancellationToken = stoppingToken},
+                subredditName =>
                 {
-                    subreddit.Comments.GetNew(limit:100);
-                    subreddit.Comments.MonitorNew(limit:100);
-                    subreddit.Comments.NewUpdated += C_NewCommentsUpdated;
-                }
-                catch (RedditBadRequestException ex)
-                {
-                    _logger.LogError(ex, "Something went wrong with request for {Subreddit} listener!", subreddit.Name);
-                }
+                    _logger.LogInformation("Processing Subreddit {Subreddit}", subredditName);
+                    var subreddit = reddit.Subreddit(subredditName);
 
-                _monitoredSubreddits.Add(subreddit);
-            }
-            
+                    try
+                    {
+                        _logger.LogInformation("Initializing {Subreddit}", subredditName);
+                        subreddit.Comments.GetNew(limit: 100);
+                        
+                        _logger.LogInformation("Starting monitoring for {Subreddit}", subredditName);
+                        subreddit.Comments.MonitorNew(limit: 100);
+                        
+                        _logger.LogInformation("Adding event handler for {Subreddit}", subredditName);
+                        subreddit.Comments.NewUpdated += C_NewCommentsUpdated;
+                    }
+                    catch (RedditBadRequestException ex)
+                    {
+                        _logger.LogError(ex, "Something went wrong with request for {Subreddit} listener!",
+                            subreddit.Name);
+                    }
+
+                    _monitoredSubreddits.Add(subreddit);
+                });
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {Time}", DateTimeOffset.Now);
-                
+
                 while (!_queue.IsEmpty)
                 {
                     _logger.LogInformation("Trying to dequeue comment");
@@ -85,7 +96,7 @@ namespace Bot.Service
                         continue;
 
                     _logger.LogInformation("Comment successfully dequeued");
-                    var tasks = dequeued.Templates.Select(template => 
+                    var tasks = dequeued.Templates.Select(template =>
                             Task.Run(async () =>
                             {
                                 _logger.LogInformation("Replying to post with matching template");
@@ -93,7 +104,7 @@ namespace Bot.Service
                                 {
                                     await dequeued.Comment.ReplyAsync(template.Response);
                                 }
-                                catch(RedditRateLimitException)
+                                catch (RedditRateLimitException)
                                 {
                                     _logger.LogWarning("Looks like he we hit the rate limit. Requeue the comment...");
                                     _queue.Enqueue(dequeued);
@@ -114,10 +125,10 @@ namespace Bot.Service
             foreach (var subreddit in _monitoredSubreddits)
             {
                 subreddit.Comments.MonitorNew();
-                subreddit.Comments.NewUpdated -= C_NewCommentsUpdated;    
+                subreddit.Comments.NewUpdated -= C_NewCommentsUpdated;
             }
         }
-        
+
         private void C_NewCommentsUpdated(object sender, CommentsUpdateEventArgs e)
         {
             _logger.LogInformation("Received {Count} new comments", e.Added.Count);
@@ -127,12 +138,13 @@ namespace Bot.Service
                                   comment.Author != _me)
                 .Select(p => new EnqueuedComment(p, _searcher.GetApplicableTemplates(p.Body)))
                 .Where(p => p.Templates.Any());
-            
+
             foreach (var comment in filtered)
             {
                 _queue.Enqueue(comment);
                 _comments.Add(comment.Comment.Fullname, comment.Comment);
-                _logger.LogInformation("New Comment | Author {Author}, Comment {Comment}", comment.Comment.Author, comment.Comment.Body);
+                _logger.LogInformation("New Comment | Author {Author}, Comment {Comment}", comment.Comment.Author,
+                    comment.Comment.Body);
             }
         }
 
@@ -145,7 +157,7 @@ namespace Bot.Service
             }
 
             public Comment Comment { get; }
-            public IEnumerable<SearchTemplate> Templates { get; } 
+            public IEnumerable<SearchTemplate> Templates { get; }
         }
     }
 }
