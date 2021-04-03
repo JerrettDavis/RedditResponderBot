@@ -62,9 +62,11 @@ namespace Bot.Service.BackgroundWorkers
                     // Get all comments more than 5 minutes older than the latest comment
                     var oldComments = cs.Store.Where(c => 
                         latest.Created - c.Value.Created > TimeSpan.FromMinutes(5))
-                        .Select(c => c.Key);
+                        .Select(c => c.Key)
+                        .ToList();
                     
                     // Remove all the old comments
+                    _logger.LogInformation("Removing {Count} comments from {Store}", oldComments.Count, cs.GetType().FullName);
                     await oldComments.ForEachAsync(async c =>
                     {
                         var (key, value) = c;
