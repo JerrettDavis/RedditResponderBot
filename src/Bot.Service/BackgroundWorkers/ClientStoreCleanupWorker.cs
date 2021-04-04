@@ -54,7 +54,7 @@ namespace Bot.Service.BackgroundWorkers
                     // Get the newest entry in the collection
                     var latest = cs.Store.Values
                         .OrderByDescending(c => c.Created)
-                        .LastOrDefault();
+                        .FirstOrDefault();
 
                     if (latest == null)
                         return;
