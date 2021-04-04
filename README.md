@@ -1,11 +1,9 @@
-# Reddit Responder Bot (TedCruzResponderBot)
+# Reddit Responder Bot
 
-This is a small proof of concept inspired by [this comment](https://old.reddit.com/r/MurderedByAOC/comments/mi1yar/this_is_pretty_rich/gt28m7p/) 
-on Reddit. This application is capable of monitoring a list of subreddits for comments containing any number of trigger 
-strings. When a comment with a matching trigger is detected, the bot with find an applicable template and respond with 
+This is a small proof of concept inspired by [this comment](https://old.reddit.com/r/MurderedByAOC/comments/mi1yar/this_is_pretty_rich/gt28m7p/)
+on Reddit. This application is capable of monitoring a list of subreddits for comments containing any number of trigger
+strings. When a comment with a matching trigger is detected, the bot with find an applicable template and respond with
 the template's configured response.
-
-# Getting Started
 
 ## Prerequisites
 
@@ -31,25 +29,25 @@ cd TedCruzResponderBot
 
 Once you're in the solution directory, you'll need to configure the application to use your Reddit account. To do this,
 you'll need an `AppId` and a `RefreshToken`. If you've never setup an app on Reddit before, check out [this guide](https://www.youtube.com/watch?v=xlWhLyVgN2s)
-from the [Reddit.NET](https://github.com/sirkris/Reddit.NET) library creators. It utilizes the `AuthTokenRetriever` 
+from the [Reddit.NET](https://github.com/sirkris/Reddit.NET) library creators. It utilizes the `AuthTokenRetriever`
 utility within the Reddit.NET project.
 
-Once you have your credentials, you will need to place them one of two places, depending on how you wish to run the 
+Once you have your credentials, you will need to place them one of two places, depending on how you wish to run the
 application.
 
 ### Docker
 
-To run the application under docker, create a new filed called `.env`. The contents of the files will 
-include the following: 
+To run the application under docker, create a new filed called `.env`. The contents of the files will
+include the following:
 
 ```dotenv
 AppId=YOUR_ID_HERE
 RefreshToken=YOUR_REFRESH_TOKEN_HERE
 ```
 
-### Dotnet 
+### Dotnet
 
-To run the application from the commandline (or your IDE) using `dotnet`, update the `AppId` and `RefreshToken` 
+To run the application from the commandline (or your IDE) using `dotnet`, update the `AppId` and `RefreshToken`
 properties in `appsettings.json` like so:
 
 ```json
@@ -112,11 +110,7 @@ To adjust the list of templates the bot uses, adjust the `Templates` property in
 }
 ```
 
-## Running the Bot
-
-There are 2 primary ways to run the bot: Docker and dotnet-cli. 
-
-### Docker
+## Running the Bot from Docker
 
 To run the bot under docker, run the following commands from the root solution directory:
 
@@ -131,7 +125,7 @@ The application should start up and start spitting out logs. To shut the applica
 docker-compose down
 ```
 
-### Dotnet Cli
+## Running the Bot from the Dotnet Cli
 
 To run the bot with the dotnet cli, run the following commands from the root solution directory:
 
@@ -141,7 +135,7 @@ dotnet build
 dotnet run --project ./src/Bot.Service
 ```
 
-# Warnings and Limitations
+## Warnings and Limitations
 
 This application relies on the [Reddit API](https://www.reddit.com/dev/api), and as such, you're bound by Reddit's terms
 of service and their [API access rules](https://github.com/reddit-archive/reddit/wiki/API). 
@@ -150,8 +144,6 @@ One core limitation of the Reddit API is that it only allows up to 60 requests a
 number of subs, it can take quite some time to consume them all. If a sub receives more than 100 comments since the last
 time it was traversed, you may miss some.
 
-# License
+## License
 
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0)
-
-
