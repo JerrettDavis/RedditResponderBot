@@ -88,12 +88,13 @@ namespace Bot.Service
                         });
                     });
                     services.AddMassTransitHostedService();
+                  
                     services.AddSingleton<ICommentStore, CommentStore>();
                     services.AddSingleton<IProcessedCommentStore, ProcessedCommentStore>();
                     services.AddSingleton<IReceivedCommentStore, ReceivedCommentStore>();
                     services.AddSingleton<ICommentStore>(s => s.GetRequiredService<IProcessedCommentStore>());
-                    services.AddSingleton<ICommentStore>(s => s.GetRequiredService<IReceivedCommentStore>());
-                    
+                    services.AddSingleton<ICommentStore>(s => s.GetRequiredService<IReceivedCommentStore>());                    
+
                     services.AddSingleton<IRedditProvider, RedditProvider>();
                     services.AddSingleton<IStringSearcher, StringSearcher>();
                     services.AddSingleton<ISubredditProvider, InMemorySubredditProvider>();

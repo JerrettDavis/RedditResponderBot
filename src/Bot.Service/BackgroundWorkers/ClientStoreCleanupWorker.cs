@@ -56,6 +56,7 @@ namespace Bot.Service.BackgroundWorkers
                         .OrderByDescending(c => c.Created)
                         .FirstOrDefault();
 
+
                     if (latest == null)
                         return;
                     

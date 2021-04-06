@@ -1,8 +1,8 @@
 # Reddit Responder Bot
 
-This is a small proof of concept inspired by [this comment](https://old.reddit.com/r/MurderedByAOC/comments/mi1yar/this_is_pretty_rich/gt28m7p/)
-on Reddit. This application is capable of monitoring a list of subreddits for comments containing any number of trigger
-strings. When a comment with a matching trigger is detected, the bot with find an applicable template and respond with
+This is a small proof of concept inspired by [this comment](https://old.reddit.com/r/MurderedByAOC/comments/mi1yar/this_is_pretty_rich/gt28m7p/) 
+on Reddit. This application is capable of monitoring a list of subreddits for comments containing any number of trigger 
+strings. When a comment with a matching trigger is detected, the bot will find an applicable template and respond with 
 the template's configured response.
 
 ## Prerequisites
