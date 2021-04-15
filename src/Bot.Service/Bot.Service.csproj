@@ -38,4 +38,8 @@
     <ItemGroup>
       <ProjectReference Include="..\Reddit.NET\src\Reddit.NET\Reddit.NET.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Application\Comments\Services" />
+    </ItemGroup>
 </Project>

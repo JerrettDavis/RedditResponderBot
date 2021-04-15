@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using Bot.Service.Application.Comments.Services;
+using Bot.Service.Application.Comments.Stores;
 using Bot.Service.Application.Consumers;
 using Bot.Service.Application.Monitor.Services;
 using Bot.Service.Application.Reddit.Services;

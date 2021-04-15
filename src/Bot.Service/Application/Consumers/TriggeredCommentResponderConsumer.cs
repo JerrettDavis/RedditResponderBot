@@ -1,27 +1,13 @@
-﻿// TedCruzResponderBot - Simple real-time chat application.
-// Copyright (C) 2021  Jerrett D. Davis
-// 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Bot.Service.Application.Comments.Models;
-using Bot.Service.Application.Comments.Services;
+using Bot.Service.Application.Comments.Stores;
+using Bot.Service.Application.StringSearch.Models;
 using Bot.Service.Common.Models.Messages;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Reddit.Controllers;
 using Reddit.Exceptions;
 
 namespace Bot.Service.Application.Consumers
@@ -53,7 +39,7 @@ namespace Bot.Service.Application.Consumers
                             context.Message.Comment, 
                             context.CancellationToken);
                         _logger.LogInformation("Responding to {Author}", comment.Author);
-                        await comment.ReplyAsync(template.Response);
+                        await HandleReply(comment, template);
                     }
                     catch (RedditRateLimitException)
                     {
@@ -68,5 +54,23 @@ namespace Bot.Service.Application.Consumers
 
             return Task.WhenAll(tasks);
         }
+
+        // TODO: This needs to be handled more gracefully
+        private static async Task HandleReply(Comment comment, SearchTemplateBase template)
+        {
+            switch (template)
+            {
+                case SearchTemplate s:
+                    await comment.ReplyAsync(s.Response);
+                    break;
+                case RandomResponseSearchTemplate r:
+                    var responses = r.Responses.ToList();
+                    var random = new Random();
+                    var randomIndex = random.Next(responses.Count);
+                    await comment.ReplyAsync(responses[randomIndex]);
+                    break;
+            }
+        }
+        
     }
 }
