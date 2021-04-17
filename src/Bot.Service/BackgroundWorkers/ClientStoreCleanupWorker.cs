@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Bot.Service.BackgroundWorkers
 {
+    /// <summary>
+    /// Used to monitor in-memory comment stores and cleanup stale records.
+    /// </summary>
     public class ClientStoreCleanupWorker : BackgroundService
     {
         private readonly ILogger<ClientStoreCleanupWorker> _logger;

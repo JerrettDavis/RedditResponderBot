@@ -10,6 +10,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Bot.Service
 {
+    /// <summary>
+    /// The core application worker. Provides most of the Reddit wire-up and
+    /// monitoring functionality.
+    /// </summary>
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
@@ -26,6 +30,10 @@ namespace Bot.Service
             _monitor = monitor;
         }
 
+        /// <summary>
+        /// Runs the main application loop
+        /// </summary>
+        /// <param name="stoppingToken">Used to stop the application loop</param>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Starting bot");
@@ -45,12 +53,18 @@ namespace Bot.Service
             }
         }
 
+        /// <inheritdoc />
         public sealed override void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Called by the garbage collector to cleanup the class. Kills all
+        /// resources
+        /// </summary>
+        /// <param name="disposing">Denotes if the class if being disposed.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
