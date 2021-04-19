@@ -9,17 +9,18 @@ namespace Bot.Service.Common.Extensions.Startup
         /// <summary>
         /// Adds configuration to the <see cref="IHostBuilder"/>
         /// </summary>
-        /// <param name="builder">The application host builder</param>
+        /// <param name="hostBuilder">The application host builder</param>
         /// <param name="args">The args to pass to the commandline configuration</param>
         /// <returns>The configured host builder</returns>
         public static IHostBuilder AddConfiguration(
-            this IHostBuilder builder,
+            this IHostBuilder hostBuilder,
             string[] args)
         {
-            return builder.ConfigureAppConfiguration((hostContext, builder) =>
+            return hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
             {
                 builder.SetBasePath(Directory.GetCurrentDirectory());
                 builder.AddJsonFile("appsettings.json", false, true);
+                builder.AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json", true, true);
                 builder.AddCommandLine(args);
                 builder.AddEnvironmentVariables();
 
