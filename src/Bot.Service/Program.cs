@@ -1,22 +1,7 @@
 using System;
-using System.IO;
-using Bot.Service.Application.Comments.Stores;
-using Bot.Service.Application.Consumers;
-using Bot.Service.Application.Monitor.Services;
-using Bot.Service.Application.Reddit.Services;
-using Bot.Service.Application.StringSearch.Services;
-using Bot.Service.Application.Templates.Services;
-using Bot.Service.BackgroundWorkers;
 using Bot.Service.Common.Extensions.Startup;
-using Bot.Service.Common.Models;
-using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Serilog;
-using IHost = Microsoft.Extensions.Hosting.IHost;
 
 namespace Bot.Service
 {
