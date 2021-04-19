@@ -1,12 +1,13 @@
 using System;
 using System.IO;
-using Bot.Service.Application.Comments.Services;
+using Bot.Service.Application.Comments.Stores;
 using Bot.Service.Application.Consumers;
 using Bot.Service.Application.Monitor.Services;
 using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Services;
 using Bot.Service.Application.Templates.Services;
 using Bot.Service.BackgroundWorkers;
+using Bot.Service.Common.Extensions.Startup;
 using Bot.Service.Common.Models;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -19,15 +20,25 @@ using IHost = Microsoft.Extensions.Hosting.IHost;
 
 namespace Bot.Service
 {
+    /// <summary>
+    /// The main class of the application
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Called by the dotnet runtime
+        /// </summary>
+        /// <param name="args">Arguments for the application</param>
         public static void Main(string[] args)
         {
             try
             {
+                // Let's get the host built and ready to roll.
                 using IHost host = CreateHostBuilder(args).Build();
+                // Fire up the application
                 host.Run();
             }
+            // This will catch any-and-all uncaught errors from the application.
             catch (Exception ex)
             {
                 if (Log.Logger == null || Log.Logger.GetType().Name == "SilentLogger")
@@ -46,65 +57,15 @@ namespace Bot.Service
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        /// <summary>
+        /// Gets the application host configured and ready to go
+        /// </summary>
+        /// <param name="args">The arguments to pass to the application</param>
+        /// <returns>The configured host builder</returns>
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureLogging(loggingBuilder =>
-                { 
-                    loggingBuilder.ClearProviders();
-                    
-                    var configuration = new ConfigurationBuilder()
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-                    var logger = new LoggerConfiguration()
-                        .ReadFrom.Configuration(configuration)
-                        .CreateLogger();
-                    
-                    loggingBuilder.AddSerilog(logger, dispose: true);
-                })
-                .ConfigureAppConfiguration((hostContext, builder) =>
-                {
-                    builder.SetBasePath(Directory.GetCurrentDirectory());
-                    builder.AddJsonFile("appsettings.json", false, true);
-                    builder.AddCommandLine(args);
-                    builder.AddEnvironmentVariables();
-                    
-                    if (hostContext.HostingEnvironment.IsDevelopment())
-                    {
-                        builder.AddUserSecrets<Program>();
-                    }
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddSingleton(s => s.GetService<IOptions<AppSettings>>()!.Value);
-
-                    services.AddMassTransit(x =>
-                    {
-                        x.AddConsumers(typeof(NewCommentTriggerProcessorConsumer).Assembly);
-                        
-                        x.UsingInMemory((context, cfg) =>
-                        {
-                            cfg.TransportConcurrencyLimit = 100;
-                            cfg.ConfigureEndpoints(context);
-                        });
-                    });
-                    services.AddMassTransitHostedService();
-                  
-                    services.AddSingleton<ICommentStore, CommentStore>();
-                    services.AddSingleton<IProcessedCommentStore, ProcessedCommentStore>();
-                    services.AddSingleton<IReceivedCommentStore, ReceivedCommentStore>();
-                    services.AddSingleton<ICommentStore>(s => s.GetRequiredService<IProcessedCommentStore>());
-                    services.AddSingleton<ICommentStore>(s => s.GetRequiredService<IReceivedCommentStore>());                    
-
-                    services.AddSingleton<IRedditProvider, RedditProvider>();
-                    services.AddSingleton<IStringSearcher, StringSearcher>();
-                    services.AddSingleton<ISubredditProvider, InMemorySubredditProvider>();
-                    services.AddSingleton<ISubredditMonitor, SubredditCommentMonitor>();
-                    services.AddSingleton<ITemplateProvider, InMemoryTemplateProvider>();
-                    
-                    services.AddHostedService<ClientStoreCleanupWorker>();
-                    services.AddHostedService<Worker>();
-                    
-                    services.Configure<AppSettings>(hostContext.Configuration);
-                });
+                .AddLogging()
+                .AddConfiguration(args)
+                .AddServices();
     }
 }

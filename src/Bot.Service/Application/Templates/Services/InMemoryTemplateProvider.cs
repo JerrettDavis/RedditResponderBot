@@ -1,58 +1,83 @@
-﻿// TedCruzResponderBot - Simple real-time chat application.
-// Copyright (C) 2021  Jerrett D. Davis
-// 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bot.Service.Application.StringSearch.Models;
-using Bot.Service.Application.StringSearch.Services;
 using Bot.Service.Common;
-using Bot.Service.Common.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Bot.Service.Application.Templates.Services
 {
     public class InMemoryTemplateProvider : ITemplateProvider
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<InMemoryTemplateProvider> _logger;
+        private readonly IEnumerable<SearchTemplateBase> _templates;
 
-        public InMemoryTemplateProvider(IConfiguration configuration)
+        public InMemoryTemplateProvider(
+            IConfiguration configuration,
+            ILogger<InMemoryTemplateProvider> logger)
         {
             _configuration = configuration;
+            _logger = logger;
+            _templates = InitializeTemplates();
         }
 
-        public IEnumerable<SearchTemplate> GetTemplates()
+        private IEnumerable<SearchTemplateBase> InitializeTemplates()
         {
+            _logger.LogInformation("Initializing Templates...");
             var templates = new List<TemplatePrototype>();
             
             _configuration.GetSection(AppConstants.TemplateConfigurationSection)
                 .Bind(templates);
 
-            return templates.Select(t => new SearchTemplate
-            {
-                TemplateName = t.TemplateName,
-                Triggers = t.Triggers,
-                Response = t.Response
-            });
+            var searchTemplates = templates
+                .Where(t => !string.IsNullOrWhiteSpace(t.Response) &&
+                            (t.Responses == null ||
+                             !t.Responses.Any()))
+                .Select(t => new SearchTemplate
+                {
+                    TemplateName = t.TemplateName,
+                    Triggers = t.Triggers,
+                    Response = t.Response
+                }).ToList();
+            var randomResponseSearchTemplate = templates
+                .Where(t => t.Responses != null && t.Responses.Any())
+                .Select(t => new RandomResponseSearchTemplate 
+                {
+                    TemplateName = t.TemplateName,
+                    Triggers = t.Triggers,
+                    Responses = t.Responses!
+                }).ToList();
+
+            var transformed = new List<SearchTemplateBase>();
+            
+            transformed.AddRange(searchTemplates);
+            transformed.AddRange(randomResponseSearchTemplate);
+            
+            _logger.LogInformation(
+                "Templates loaded! Found {TemplateCount}, " +
+                "{SearchTemplateCount} SearchTemplates, " +
+                "{RandomResponseTemplateCount} RandomResponseSearchTemplate", 
+                transformed.Count, 
+                searchTemplates.Count, 
+                randomResponseSearchTemplate.Count);
+
+            return transformed;
         }
 
+        public IEnumerable<SearchTemplateBase> GetTemplates()
+        {
+            return _templates;
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Local
         private class TemplatePrototype
         {
             public string TemplateName { get; set; } = null!;
             public IEnumerable<string> Triggers { get; set; } = null!;
             public string Response { get; set; } = null!;
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
+            public IEnumerable<string>? Responses { get; set; }
         }
     }
 }
