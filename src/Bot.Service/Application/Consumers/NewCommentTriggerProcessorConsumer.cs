@@ -75,7 +75,12 @@ namespace Bot.Service.Application.Consumers
                 await context.Publish<NewCommentNeedsResponse>(new
                 {
                     Comment = c.Comment.Fullname, 
-                    c.Templates
+                    SearchTemplates = c.Templates
+                        .Where(t => t is not RandomResponseSearchTemplate and SearchTemplate) // Lol probably need to iron this out soon
+                        .Cast<SearchTemplate>(),
+                    RandomResponseSearchTemplates = c.Templates
+                        .Where(t => t is RandomResponseSearchTemplate)
+                        .Cast<RandomResponseSearchTemplate>()
                 });
             }, cancellationToken: context.CancellationToken);
         }

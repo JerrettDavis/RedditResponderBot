@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bot.Service.Application.Comments.Models;
@@ -29,7 +30,14 @@ namespace Bot.Service.Application.Consumers
         public Task Consume(ConsumeContext<NewCommentNeedsResponse> context)
         {
             _logger.LogInformation("Received response request for {Comment}", context.Message.Comment);
-            var tasks = context.Message.Templates.Select(template =>
+            
+            // Somewhat hacky since MassTransit doesn't handle inheritance
+            var templates = new List<SearchTemplateBase>();
+            
+            templates.AddRange(context.Message.SearchTemplates);
+            templates.AddRange(context.Message.RandomResponseSearchTemplates);
+            
+            var tasks = templates.Select(template =>
                 Task.Run(async () =>
                 {
                     try

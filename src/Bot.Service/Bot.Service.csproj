@@ -4,6 +4,7 @@
         <TargetFramework>net5.0</TargetFramework>
         <UserSecretsId>dotnet-Bot.Service-064A5E98-2CE1-4704-A5CF-5646141364A3</UserSecretsId>
         <Nullable>enable</Nullable>
+        <LangVersion>9</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

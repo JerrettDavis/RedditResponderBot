@@ -3,20 +3,28 @@ using System.Linq;
 using Bot.Service.Application.StringSearch.Models;
 using Bot.Service.Common;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Bot.Service.Application.Templates.Services
 {
     public class InMemoryTemplateProvider : ITemplateProvider
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<InMemoryTemplateProvider> _logger;
+        private readonly IEnumerable<SearchTemplateBase> _templates;
 
-        public InMemoryTemplateProvider(IConfiguration configuration)
+        public InMemoryTemplateProvider(
+            IConfiguration configuration,
+            ILogger<InMemoryTemplateProvider> logger)
         {
             _configuration = configuration;
+            _logger = logger;
+            _templates = InitializeTemplates();
         }
 
-        public IEnumerable<SearchTemplateBase> GetTemplates()
+        private IEnumerable<SearchTemplateBase> InitializeTemplates()
         {
+            _logger.LogInformation("Initializing Templates...");
             var templates = new List<TemplatePrototype>();
             
             _configuration.GetSection(AppConstants.TemplateConfigurationSection)
@@ -25,13 +33,13 @@ namespace Bot.Service.Application.Templates.Services
             var searchTemplates = templates
                 .Where(t => !string.IsNullOrWhiteSpace(t.Response) &&
                             (t.Responses == null ||
-                            !t.Responses.Any()))
+                             !t.Responses.Any()))
                 .Select(t => new SearchTemplate
                 {
                     TemplateName = t.TemplateName,
                     Triggers = t.Triggers,
                     Response = t.Response
-                });
+                }).ToList();
             var randomResponseSearchTemplate = templates
                 .Where(t => t.Responses != null && t.Responses.Any())
                 .Select(t => new RandomResponseSearchTemplate 
@@ -39,26 +47,36 @@ namespace Bot.Service.Application.Templates.Services
                     TemplateName = t.TemplateName,
                     Triggers = t.Triggers,
                     Responses = t.Responses!
-                });
+                }).ToList();
 
             var transformed = new List<SearchTemplateBase>();
             
             transformed.AddRange(searchTemplates);
             transformed.AddRange(randomResponseSearchTemplate);
+            
+            _logger.LogInformation(
+                "Templates loaded! Found {TemplateCount}, " +
+                "{SearchTemplateCount} SearchTemplates, " +
+                "{RandomResponseTemplateCount} RandomResponseSearchTemplate", 
+                transformed.Count, 
+                searchTemplates.Count, 
+                randomResponseSearchTemplate.Count);
 
-            return templates.Select(t => new SearchTemplate
-            {
-                TemplateName = t.TemplateName,
-                Triggers = t.Triggers,
-                Response = t.Response
-            });
+            return transformed;
         }
 
+        public IEnumerable<SearchTemplateBase> GetTemplates()
+        {
+            return _templates;
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Local
         private class TemplatePrototype
         {
             public string TemplateName { get; set; } = null!;
             public IEnumerable<string> Triggers { get; set; } = null!;
             public string Response { get; set; } = null!;
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
             public IEnumerable<string>? Responses { get; set; }
         }
     }

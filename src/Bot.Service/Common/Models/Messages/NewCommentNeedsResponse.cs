@@ -13,6 +13,7 @@ namespace Bot.Service.Common.Models.Messages
     public interface NewCommentNeedsResponse
     {
         string Comment { get; set; }
-        public IEnumerable<SearchTemplateBase> Templates { get; set; }
+        public IEnumerable<SearchTemplate> SearchTemplates { get; set; }
+        public IEnumerable<RandomResponseSearchTemplate> RandomResponseSearchTemplates { get; set; }
     }
 }
