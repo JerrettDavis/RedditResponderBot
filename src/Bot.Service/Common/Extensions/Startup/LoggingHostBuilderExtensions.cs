@@ -20,6 +20,7 @@ namespace Bot.Service.Common.Extensions.Startup
                 loggingBuilder.ClearProviders();
 
                 var configuration = new ConfigurationBuilder()
+                    .AddDotEnvFile(".env")
                     .AddJsonFile("appsettings.json")
                     .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true, true)
                     .Build();

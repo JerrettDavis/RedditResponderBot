@@ -19,6 +19,7 @@ namespace Bot.Service.Common.Extensions.Startup
             return hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
             {
                 builder.SetBasePath(Directory.GetCurrentDirectory());
+                builder.AddDotEnvFile(".env");
                 builder.AddJsonFile("appsettings.json", false, true);
                 builder.AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json", true, true);
                 builder.AddCommandLine(args);

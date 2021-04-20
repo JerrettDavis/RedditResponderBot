@@ -1,5 +1,7 @@
 using System;
 using Bot.Service.Common.Extensions.Startup;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
