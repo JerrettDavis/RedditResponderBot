@@ -7,6 +7,7 @@ using Bot.Service.Application.Reddit.Services;
 using Bot.Service.Application.StringSearch.Services;
 using Bot.Service.Application.Templates.Services;
 using Bot.Service.BackgroundWorkers;
+using Bot.Service.Common.Extensions.Startup;
 using Bot.Service.Common.Models;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -53,6 +54,7 @@ namespace Bot.Service
                     loggingBuilder.ClearProviders();
                     
                     var configuration = new ConfigurationBuilder()
+                        .AddDotEnvFile(".env")
                         .AddJsonFile("appsettings.json")
                         .Build();
                     var logger = new LoggerConfiguration()
@@ -63,10 +65,11 @@ namespace Bot.Service
                 })
                 .ConfigureAppConfiguration((hostContext, builder) =>
                 {
-                    builder.SetBasePath(Directory.GetCurrentDirectory());
-                    builder.AddJsonFile("appsettings.json", false, true);
-                    builder.AddCommandLine(args);
-                    builder.AddEnvironmentVariables();
+                    builder.SetBasePath(Directory.GetCurrentDirectory())
+                        .AddDotEnvFile(".env")
+                        .AddJsonFile("appsettings.json", false, true)
+                        .AddCommandLine(args)
+                        .AddEnvironmentVariables();
                     
                     if (hostContext.HostingEnvironment.IsDevelopment())
                     {
