@@ -1,16 +1,5 @@
 using System;
 using Bot.Service.Common.Extensions.Startup;
-using System.IO;
-using Bot.Service.Application.Comments.Services;
-using Bot.Service.Application.Consumers;
-using Bot.Service.Application.Monitor.Services;
-using Bot.Service.Application.Reddit.Services;
-using Bot.Service.Application.StringSearch.Services;
-using Bot.Service.Application.Templates.Services;
-using Bot.Service.BackgroundWorkers;
-using Bot.Service.Common.Extensions.Startup;
-using Bot.Service.Common.Models;
-using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
